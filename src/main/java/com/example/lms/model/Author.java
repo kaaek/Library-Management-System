@@ -27,6 +27,12 @@ public class Author {
     @Column(name = "biography", nullable = false)
     private String biography;
     
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true) // do not need to set orphanRemoval = true unless you want books to be deleted when removed from author's collection.
-    private Set<Book> books = new HashSet<>();
+    @OneToMany(mappedBy = "author", cascade = CascadeType.PERSIST) //, orphanRemoval = true) // do not need to set orphanRemoval = true unless you want books to be deleted when removed from author's collection.
+    private Set<Book> books;
+
+    public Author(String name, String biography, Set<Book> books){
+        this.name = name;
+        this.biography = biography;
+        this.books = books;
+    }
 }
