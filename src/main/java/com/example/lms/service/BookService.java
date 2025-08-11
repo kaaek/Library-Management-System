@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 @Service
 public class BookService {
 
-    private String bookNotFoundMsg = "Book not found with ID: ";
-    private String authorNotFoundMsg = "Author not found with ID: ";
+    private final String bookNotFoundMsg = "Book not found with ID: ";
+    private final String authorNotFoundMsg = "Author not found with ID: ";
 
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
@@ -45,6 +45,104 @@ public class BookService {
                 book.getId(), book.getTitle(), book.getIsbn(), book.getCategory(), book.getAuthor().getId(), book.isAvailable()
         );
     }
+
+    public List<BookResponseDTO> findByTitleAndCategoryAndAuthor(String title, Category category, String authorName) {
+        List<Book> books = bookRepository.findByTitleContainingIgnoreCaseAndCategoryAndAuthor_NameContainingIgnoreCase(title, category, authorName);
+        return books.stream()
+                .map(book -> new BookResponseDTO(
+                        book.getId(),
+                        book.getTitle(),
+                        book.getIsbn(),
+                        book.getCategory(),
+                        book.getAuthor().getId(),
+                        book.isAvailable()))
+                .collect(Collectors.toList());
+    }
+
+    public List<BookResponseDTO> findByTitleAndCategory(String title, Category category) {
+        List<Book> books = bookRepository.findByTitleContainingIgnoreCaseAndCategory(title, category);
+        return books.stream()
+                .map(book -> new BookResponseDTO(
+                        book.getId(),
+                        book.getTitle(),
+                        book.getIsbn(),
+                        book.getCategory(),
+                        book.getAuthor().getId(),
+                        book.isAvailable()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<BookResponseDTO> findByTitleAndAuthor(String title, String authorName) {
+        List<Book> books = bookRepository.findByTitleContainingIgnoreCaseAndAuthor_NameContainingIgnoreCase(title, authorName);
+        return books.stream()
+                .map(book -> new BookResponseDTO(
+                        book.getId(),
+                        book.getTitle(),
+                        book.getIsbn(),
+                        book.getCategory(),
+                        book.getAuthor().getId(),
+                        book.isAvailable()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<BookResponseDTO> findByCategoryAndAuthor(Category category, String authorName){
+        List<Book> books = bookRepository.findByCategoryAndAuthor_NameContainingIgnoreCase(category, authorName);
+        return books.stream()
+                .map(book -> new BookResponseDTO(
+                        book.getId(),
+                        book.getTitle(),
+                        book.getIsbn(),
+                        book.getCategory(),
+                        book.getAuthor().getId(),
+                        book.isAvailable()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<BookResponseDTO> findByTitle(String title) {
+        List<Book> books = bookRepository.findByTitleContainingIgnoreCase(title);
+        return books.stream()
+                .map(book -> new BookResponseDTO(
+                        book.getId(),
+                        book.getTitle(),
+                        book.getIsbn(),
+                        book.getCategory(),
+                        book.getAuthor().getId(),
+                        book.isAvailable()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<BookResponseDTO> findByCategory (Category category) {
+        List<Book> books = bookRepository.findByCategory(category);
+        return books.stream()
+                .map(book -> new BookResponseDTO(
+                        book.getId(),
+                        book.getTitle(),
+                        book.getIsbn(),
+                        book.getCategory(),
+                        book.getAuthor().getId(),
+                        book.isAvailable()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<BookResponseDTO> findByAuthor(String authorName) {
+        List<Book> books = bookRepository.findByAuthor_NameContainingIgnoreCase(authorName);
+        return books.stream()
+                .map(book -> new BookResponseDTO(
+                        book.getId(),
+                        book.getTitle(),
+                        book.getIsbn(),
+                        book.getCategory(),
+                        book.getAuthor().getId(),
+                        book.isAvailable()
+                ))
+                .collect(Collectors.toList());
+    }
+
 
     public BookResponseDTO createBook(BookRequestDTO bookRequestDTO) {
         // Fields:
