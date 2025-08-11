@@ -3,6 +3,7 @@ package com.example.lms.api;
 import com.example.lms.dto.author.AuthorRequestDTO;
 import com.example.lms.dto.author.AuthorResponseDTO;
 import com.example.lms.dto.author.AuthorUpdateDTO;
+import com.example.lms.dto.book.BookResponseDTO;
 import com.example.lms.dto.response.ApiResponse;
 import com.example.lms.service.AuthorService;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,11 @@ public class AuthorController {
     @GetMapping("/{id}")
     public AuthorResponseDTO getAuthorById(@PathVariable UUID id){
         return authorService.getAuthorById(id);
+    }
+
+    @GetMapping("/{id}/books")
+    public List<BookResponseDTO> getBooksByAuthorById(@PathVariable UUID id){
+        return authorService.getBooksByAuthorById(id);
     }
 
     @PostMapping("/new")

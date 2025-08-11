@@ -3,6 +3,7 @@ package com.example.lms.service;
 import com.example.lms.dto.author.AuthorRequestDTO;
 import com.example.lms.dto.author.AuthorResponseDTO;
 import com.example.lms.dto.author.AuthorUpdateDTO;
+import com.example.lms.dto.book.BookResponseDTO;
 import com.example.lms.dto.response.ApiResponse;
 import com.example.lms.exception.AuthorNotFoundException;
 import com.example.lms.model.Author;
@@ -49,6 +50,25 @@ public class AuthorService {
                 author.getBiography(),
                 author.getBooks().stream().map(Book::getId).collect(Collectors.toSet())
         );
+    }
+
+    @Transactional
+    public List<BookResponseDTO> getBooksByAuthorById(UUID authorId){
+        // Fetch author
+        Author author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new AuthorNotFoundException(authorNotFoundMsg + authorId));
+        Set<Book> books = author.getBooks();
+        return books.stream()
+                .map(book -> new BookResponseDTO(
+                        book.getId(),
+                        book.getTitle(),
+                        book.getIsbn(),
+                        book.getCategory(),
+                        book.getAuthor().getId(),
+                        book.isAvailable()
+                ))
+                .collect(Collectors.toList());
+
     }
 
     public ApiResponse<AuthorResponseDTO> createAuthor(AuthorRequestDTO authorRequestDTO){
