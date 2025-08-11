@@ -2,8 +2,7 @@ package com.example.lms.service;
 import com.example.lms.dto.book.BookRequestDTO;
 import com.example.lms.dto.book.BookResponseDTO;
 import com.example.lms.dto.book.BookUpdateDTO;
-import com.example.lms.exception.AuthorNotFoundException;
-import com.example.lms.exception.BookNotFoundException;
+import com.example.lms.exception.EntityNotFoundException;
 import com.example.lms.model.Author;
 import com.example.lms.model.Book;
 import com.example.lms.model.enums.Category;
@@ -153,7 +152,7 @@ public class BookService {
 
         // Find author.
         Author author = authorRepository.findById(authorId)
-                .orElseThrow(() -> new AuthorNotFoundException(authorNotFoundMsg + authorId));
+                .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
 
         // New book object
         Book newBook = new Book(title, isbn, category, author, true);
@@ -184,7 +183,7 @@ public class BookService {
 
         // Find author.
         Author author = authorRepository.findById(newAuthorId)
-                .orElseThrow(() -> new AuthorNotFoundException(authorNotFoundMsg + newAuthorId));
+                .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + newAuthorId));
 
         // Set fields
         book.setTitle(newTitle);

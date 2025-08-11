@@ -5,7 +5,7 @@ import com.example.lms.dto.author.AuthorResponseDTO;
 import com.example.lms.dto.author.AuthorUpdateDTO;
 import com.example.lms.dto.book.BookResponseDTO;
 import com.example.lms.dto.response.ApiResponse;
-import com.example.lms.exception.AuthorNotFoundException;
+import com.example.lms.exception.EntityNotFoundException;
 import com.example.lms.model.Author;
 import com.example.lms.model.Book;
 import com.example.lms.repository.AuthorRepository;
@@ -43,7 +43,7 @@ public class AuthorService {
 
     public AuthorResponseDTO getAuthorById(UUID id){
         Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new AuthorNotFoundException(authorNotFoundMsg + id));
+                .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + id));
         return new AuthorResponseDTO(
                 author.getId(),
                 author.getName(),
@@ -56,7 +56,7 @@ public class AuthorService {
     public List<BookResponseDTO> getBooksByAuthorById(UUID authorId){
         // Fetch author
         Author author = authorRepository.findById(authorId)
-                .orElseThrow(() -> new AuthorNotFoundException(authorNotFoundMsg + authorId));
+                .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
         Set<Book> books = author.getBooks();
         return books.stream()
                 .map(book -> new BookResponseDTO(
@@ -112,7 +112,7 @@ public class AuthorService {
 
         // Get Author
         Author oldAuthor = authorRepository.findById(authorId)
-                .orElseThrow(() -> new AuthorNotFoundException(authorNotFoundMsg + authorId));
+                .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
 
         // Set fields
         oldAuthor.setName(newName);
@@ -152,7 +152,7 @@ public class AuthorService {
 //    public void deleteAuthorById(UUID authorId){
 //        // Find author
 //        Author author = authorRepository.findById(authorId)
-//                .orElseThrow(() -> new AuthorNotFoundException(authorNotFoundMsg + authorId));
+//                .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
 //
 //
 //        // Remove reference

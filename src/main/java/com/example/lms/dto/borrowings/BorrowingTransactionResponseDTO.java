@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Data
 @AllArgsConstructor
-public class BorrowingTransactionUpdateDTO {
+public class BorrowingTransactionResponseDTO {
     private UUID id;
     private UUID bookId;
     private UUID borrowerId;

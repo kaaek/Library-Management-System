@@ -3,7 +3,6 @@ package com.example.lms.service;
 import com.example.lms.dto.borrower.BorrowerRequestDTO;
 import com.example.lms.dto.borrower.BorrowerResponseDTO;
 import com.example.lms.dto.borrower.BorrowerUpdateDTO;
-import com.example.lms.exception.BorrowerNotFoundException;
 import com.example.lms.model.Borrower;
 import com.example.lms.model.BorrowingTransaction;
 import com.example.lms.repository.BorrowerRepository;

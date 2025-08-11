@@ -33,7 +33,7 @@ public class BorrowingTransaction {
     private LocalDate borrowDate;
 
     @Column(name = "return_date", nullable = false)
-    private LocalDate returnDate;
+    private LocalDate returnDate; // One month after the borrow date.
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_status", nullable = false)
