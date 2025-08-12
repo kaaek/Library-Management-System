@@ -32,8 +32,8 @@ public class Borrower {
     @Column(name = "phone_number", nullable = false, unique = true)
     private String phoneNumber;
 
-    @OneToMany(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<BorrowingTransaction> transactions = new HashSet<>();
+//    @OneToMany(mappedBy = "borrower", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<BorrowingTransaction> transactions = new HashSet<>();
 
     public Borrower(String name, String email, String phoneNumber){
         this.name = name;

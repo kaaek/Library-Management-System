@@ -11,5 +11,5 @@ import java.util.UUID;
 public class AuthorUpdateDTO {
     private String name;
     private String biography;
-    private Set<UUID> bookIds;
+    //private Set<UUID> bookIds;
 }

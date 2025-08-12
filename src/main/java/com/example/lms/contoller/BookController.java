@@ -1,4 +1,4 @@
-package com.example.lms.api;
+package com.example.lms.contoller;
 
 import com.example.lms.dto.book.BookRequestDTO;
 import com.example.lms.dto.book.BookResponseDTO;

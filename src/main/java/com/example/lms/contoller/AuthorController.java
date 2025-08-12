@@ -1,4 +1,4 @@
-package com.example.lms.api;
+package com.example.lms.contoller;
 
 import com.example.lms.dto.author.AuthorRequestDTO;
 import com.example.lms.dto.author.AuthorResponseDTO;
@@ -37,12 +37,12 @@ public class AuthorController {
     }
 
     @PostMapping("/new")
-    public ApiResponse<AuthorResponseDTO> createAuthor(@RequestBody AuthorRequestDTO authorRequestDTO){
+    public AuthorResponseDTO createAuthor(@RequestBody AuthorRequestDTO authorRequestDTO){
         return authorService.createAuthor(authorRequestDTO);
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<AuthorResponseDTO> updateAuthor(@PathVariable UUID id, @RequestBody AuthorUpdateDTO authorUpdateDTO){
+    public AuthorResponseDTO updateAuthor(@PathVariable UUID id, @RequestBody AuthorUpdateDTO authorUpdateDTO){
         return authorService.update(id, authorUpdateDTO);
     }
 

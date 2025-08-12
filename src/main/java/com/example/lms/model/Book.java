@@ -35,8 +35,8 @@ public class Book {
     @JoinColumn(name = "author_id", referencedColumnName = "id", nullable = false)
     private Author author;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<BorrowingTransaction> transactions = new HashSet<>();
+//    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<BorrowingTransaction> transactions = new HashSet<>();
 
     @Column(name = "available", nullable = false)
     private boolean available;

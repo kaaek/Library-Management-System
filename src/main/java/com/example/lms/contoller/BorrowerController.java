@@ -1,4 +1,4 @@
-package com.example.lms.api;
+package com.example.lms.contoller;
 
 import com.example.lms.dto.borrower.BorrowerRequestDTO;
 import com.example.lms.dto.borrower.BorrowerResponseDTO;

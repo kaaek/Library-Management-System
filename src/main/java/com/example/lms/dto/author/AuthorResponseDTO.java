@@ -3,7 +3,7 @@ package com.example.lms.dto.author;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -12,5 +12,5 @@ public class AuthorResponseDTO {
     private UUID id;
     private String name;
     private String biography;
-    private Set<UUID> bookIds;
+    private List<UUID> bookIds;
 }

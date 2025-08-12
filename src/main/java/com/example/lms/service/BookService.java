@@ -8,6 +8,7 @@ import com.example.lms.model.Book;
 import com.example.lms.model.enums.Category;
 import com.example.lms.repository.AuthorRepository;
 import com.example.lms.repository.BookRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -19,10 +20,12 @@ public class BookService {
     private final String bookNotFoundMsg = "Book not found with ID: ";
     private final String authorNotFoundMsg = "Author not found with ID: ";
 
+    private final ModelMapper modelMapper;
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
 
-    public BookService(BookRepository bookRepository, AuthorRepository authorRepository) {
+    public BookService(ModelMapper modelMapper, BookRepository bookRepository, AuthorRepository authorRepository) {
+        this.modelMapper = modelMapper;
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
     }
@@ -34,15 +37,12 @@ public class BookService {
                         book.getId(), book.getTitle(), book.getIsbn(), book.getCategory(), book.getAuthor().getId(), book.isAvailable()
                         )
                 )
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public BookResponseDTO getBookById(UUID id){
-        Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new BookNotFoundException(bookNotFoundMsg + id));
-        return new BookResponseDTO(
-                book.getId(), book.getTitle(), book.getIsbn(), book.getCategory(), book.getAuthor().getId(), book.isAvailable()
-        );
+        Book book = bookRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(bookNotFoundMsg + id));
+        return modelMapper.map(book, BookResponseDTO.class);
     }
 
     public List<BookResponseDTO> findByTitleAndCategoryAndAuthor(String title, Category category, String authorName) {
@@ -151,22 +151,16 @@ public class BookService {
         UUID authorId = bookRequestDTO.getAuthorId();
 
         // Find author.
-        Author author = authorRepository.findById(authorId)
-                .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
+        Author author = authorRepository.findById(authorId).orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
 
         // New book object
         Book newBook = new Book(title, isbn, category, author, true);
-
-        // Update inverse side of the relationship (author)
-        author.getBooks().add(newBook);
 
         // Persist
         bookRepository.save(newBook);
 
         // Return DTO
-        return new BookResponseDTO(
-                newBook.getId(), newBook.getTitle(), newBook.getIsbn(), newBook.getCategory(), newBook.getAuthor().getId(), newBook.isAvailable()
-        );
+        return modelMapper.map(newBook, BookResponseDTO.class);
     }
 
     public BookResponseDTO update(UUID bookId, BookUpdateDTO bookUpdateDTO) {
@@ -179,7 +173,7 @@ public class BookService {
 
         // Find book.
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookNotFoundMsg + bookId));
+                .orElseThrow(() -> new EntityNotFoundException(bookNotFoundMsg + bookId));
 
         // Find author.
         Author author = authorRepository.findById(newAuthorId)
@@ -194,8 +188,6 @@ public class BookService {
         // Author:
         Author oldAuthor = book.getAuthor();
         if (!oldAuthor.equals(author)) { // Author changed.
-            oldAuthor.getBooks().remove(book);
-            author.getBooks().add(book);
             book.setAuthor(author);
         }
 
@@ -203,23 +195,16 @@ public class BookService {
         bookRepository.save(book);
 
         // return DTO
-        return new BookResponseDTO(
-                book.getId(), book.getTitle(), book.getIsbn(), book.getCategory(), book.getAuthor().getId(), book.isAvailable()
-        );
+        return modelMapper.map(book, BookResponseDTO.class);
     }
 
     public void deleteById(UUID bookId){
 
         // Find book.
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookNotFoundMsg + bookId));
-
-        // Remove stale references to the book being deleted.
-        Author author = book.getAuthor();
-        author.getBooks().remove(book);
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new EntityNotFoundException(bookNotFoundMsg + bookId));
 
         // Flush
-        bookRepository.deleteById(bookId);
+        bookRepository.delete(book);
     }
 
     public void deleteAll() {

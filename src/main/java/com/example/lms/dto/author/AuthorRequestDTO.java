@@ -12,5 +12,4 @@ import java.util.UUID;
 public class AuthorRequestDTO {
     private String name;
     private String biography;
-    private Set<UUID> bookIds;
 }

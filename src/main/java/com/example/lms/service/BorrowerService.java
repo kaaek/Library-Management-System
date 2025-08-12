@@ -31,14 +31,6 @@ public class BorrowerService {
         String newEmail = borrowerRequestDTO.getEmail();
         String newPhoneNumber = borrowerRequestDTO.getPhoneNumber();
 
-//        // Check if e-mail exists
-//        if(borrowerRepository.existsByEmail(newEmail)){
-//            throw new IllegalArgumentException("E-mail already exists: "+newEmail);
-//        }
-//        // Check if phone number exists
-//        if(borrowerRepository.existsByPhoneNumber(newPhoneNumber)){
-//            throw new IllegalArgumentException("Phone number already exists: "+newPhoneNumber);
-//        }
 
         if(emailExists(newEmail)){
             throw new IllegalArgumentException(emailExistsMsg+newEmail);

@@ -36,7 +36,10 @@ public class AuthorService {
                         author.getId(),
                         author.getName(),
                         author.getBiography(),
-                        author.getBooks().stream().map(Book::getId).collect(Collectors.toSet())
+                        bookRepository.findByAuthor_NameContainingIgnoreCase(author.getName())
+                                .stream()
+                                .map(Book::getId)
+                                .toList()
                 ))
                 .collect(Collectors.toList());
     }
@@ -48,7 +51,10 @@ public class AuthorService {
                 author.getId(),
                 author.getName(),
                 author.getBiography(),
-                author.getBooks().stream().map(Book::getId).collect(Collectors.toSet())
+                bookRepository.findByAuthor_NameContainingIgnoreCase(author.getName())
+                        .stream()
+                        .map(Book::getId)
+                        .toList()
         );
     }
 
@@ -57,7 +63,7 @@ public class AuthorService {
         // Fetch author
         Author author = authorRepository.findById(authorId)
                 .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
-        Set<Book> books = author.getBooks();
+        List<Book> books = bookRepository.findByAuthor_NameContainingIgnoreCase(author.getName());
         return books.stream()
                 .map(book -> new BookResponseDTO(
                         book.getId(),
@@ -67,105 +73,63 @@ public class AuthorService {
                         book.getAuthor().getId(),
                         book.isAvailable()
                 ))
-                .collect(Collectors.toList());
+                .toList();
 
     }
 
-    public ApiResponse<AuthorResponseDTO> createAuthor(AuthorRequestDTO authorRequestDTO){
-        // What if said author exists? (Each book has one author)
+    public AuthorResponseDTO createAuthor(AuthorRequestDTO authorRequestDTO){
+
         // Fields
         String newName = authorRequestDTO.getName();
         String newBio = authorRequestDTO.getBiography();
-        Set<UUID> newBookIds = authorRequestDTO.getBookIds();
 
-        List<String> warnings = new ArrayList<>();
-
-        // Find books
-        Set<Book> validBooks = new HashSet<>();
-        for (UUID bookId: newBookIds){
-            Optional<Book> bookOpt = bookRepository.findById(bookId);
-            if (bookOpt.isPresent()) {
-                validBooks.add(bookOpt.get());
-            } else {
-                warnings.add("Book with ID " + bookId + " does not exist and was skipped.");
-            }
+        // Check if author already exists
+        if(!authorRepository.findByNameContainingIgnoreCase(newName).isEmpty()) {
+            throw new IllegalArgumentException("Author already exists");
         }
 
-        // Save author
-        Author newAuthor = new Author(
-            newName, newBio, validBooks
-        );
+        Author newAuthor = new Author(newName, newBio);
         authorRepository.save(newAuthor);
 
-        AuthorResponseDTO authorResponseDTO = new AuthorResponseDTO(
-              newAuthor.getId(), newAuthor.getName(), newAuthor.getBiography(), newAuthor.getBooks().stream().map(Book::getId).collect(Collectors.toSet())
+        return new AuthorResponseDTO(
+                newAuthor.getId(),
+                newAuthor.getName(),
+                newAuthor.getBiography(),
+                bookRepository.findByAuthor_NameContainingIgnoreCase(newAuthor.getName())
+                        .stream()
+                        .map(Book::getId)
+                        .toList()
         );
-
-        return new ApiResponse<>(authorResponseDTO, warnings);
     }
 
-    public ApiResponse<AuthorResponseDTO> update(UUID authorId, AuthorUpdateDTO authorUpdateDTO) {
+    public AuthorResponseDTO update(UUID authorId, AuthorUpdateDTO authorUpdateDTO) {
         // Fields
         String newName = authorUpdateDTO.getName();
         String newBio = authorUpdateDTO.getBiography();
-        Set<UUID> newBookIds = authorUpdateDTO.getBookIds();
 
         // Get Author
-        Author oldAuthor = authorRepository.findById(authorId)
+        Author author = authorRepository.findById(authorId)
                 .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
 
         // Set fields
-        oldAuthor.setName(newName);
-        oldAuthor.setBiography(newBio);
-
-        // Validation
-        Set<Book> validBooks = new HashSet<>();
-        List<String> warnings = new ArrayList<>();
-
-        for (UUID newBookId : newBookIds) {
-            bookRepository.findById(newBookId).ifPresentOrElse(
-                    validBooks::add,
-                    () -> warnings.add("Book with ID " + newBookId + " does not exist and was skipped.")
-            );
-        }
-
-        // Assign valid books to author
-        oldAuthor.setBooks(validBooks);
+        author.setName(newName);
+        author.setBiography(newBio);
 
         // Save changes
-        Author updatedAuthor = authorRepository.save(oldAuthor);
+        authorRepository.save(author);
 
         // Build response DTO
-        AuthorResponseDTO responseDTO = new AuthorResponseDTO(
-                updatedAuthor.getId(),
-                updatedAuthor.getName(),
-                updatedAuthor.getBiography(),
-                updatedAuthor.getBooks().stream()
+
+        return new AuthorResponseDTO(
+                author.getId(),
+                author.getName(),
+                author.getBiography(),
+                bookRepository.findByAuthor_NameContainingIgnoreCase(author.getName())
+                        .stream()
                         .map(Book::getId)
-                        .collect(Collectors.toSet())
+                        .toList()
         );
-
-        return new ApiResponse<>(responseDTO, warnings);
     }
-
-//    @Transactional
-//    public void deleteAuthorById(UUID authorId){
-//        // Find author
-//        Author author = authorRepository.findById(authorId)
-//                .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
-//
-//
-//        // Remove reference
-//        Set<Book> books = author.getBooks();
-//        for(Book book:books){
-//            book.setAuthor(null);
-//            bookRepository.save(book);
-//        }
-//
-//        // Flush
-//        authorRepository.deleteById(authorId);
-//
-//    }
 
     @Transactional
     public void deleteAuthorById(UUID authorId){

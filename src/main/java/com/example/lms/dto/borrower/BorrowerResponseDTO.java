@@ -13,5 +13,4 @@ public class BorrowerResponseDTO {
     private String name;
     private String email;
     private String phoneNumber;
-    private Set<UUID> transactionIds;
 }
