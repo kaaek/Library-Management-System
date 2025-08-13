@@ -2,8 +2,6 @@ package com.example.lms.dto.borrower;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.Set;
 import java.util.UUID;
 
 @Data

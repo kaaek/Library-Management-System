@@ -4,13 +4,16 @@ import com.example.lms.dto.borrower.BorrowerRequestDTO;
 import com.example.lms.dto.borrower.BorrowerResponseDTO;
 import com.example.lms.dto.borrower.BorrowerUpdateDTO;
 import com.example.lms.model.Borrower;
-import com.example.lms.model.BorrowingTransaction;
 import com.example.lms.repository.BorrowerRepository;
+import com.example.lms.repository.BorrowingTransactionRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class BorrowerService {
@@ -20,9 +23,13 @@ public class BorrowerService {
     private final String phoneNumberExistsMsg = "Phone number already exists: ";
 
     private BorrowerRepository borrowerRepository;
+    // private BorrowingTransactionRepository borrowingTransactionRepository;
+    private ModelMapper mapper;
 
-    public BorrowerService(BorrowerRepository borrowerRepository){
+    public BorrowerService(BorrowerRepository borrowerRepository, BorrowingTransactionRepository borrowingTransactionRepository, ModelMapper mapper){
         this.borrowerRepository = borrowerRepository;
+        // this.borrowingTransactionRepository = borrowingTransactionRepository;
+        this.mapper = mapper;
     }
 
     public BorrowerResponseDTO createBorrower(BorrowerRequestDTO borrowerRequestDTO) {
@@ -47,16 +54,7 @@ public class BorrowerService {
 
         borrowerRepository.save(newBorrower);
 
-        return new BorrowerResponseDTO(
-                newBorrower.getId(),
-                newBorrower.getName(),
-                newBorrower.getEmail(),
-                newBorrower.getPhoneNumber(),
-                newBorrower.getTransactions()
-                        .stream()
-                        .map(BorrowingTransaction::getId)
-                        .collect(Collectors.toSet())
-        );
+        return mapper.map(newBorrower, BorrowerResponseDTO.class);
     }
 
     public boolean emailExists(String email) {
@@ -73,26 +71,15 @@ public class BorrowerService {
                         borrower.getId(),
                         borrower.getName(),
                         borrower.getEmail(),
-                        borrower.getPhoneNumber(),
-                        borrower.getTransactions().stream()
-                                .map(BorrowingTransaction::getId)
-                                .collect(Collectors.toSet())
-                )).collect(Collectors.toList());
+                        borrower.getPhoneNumber()
+                )).toList();
     }
 
     public BorrowerResponseDTO getBorrowerById(UUID id){
         Borrower borrower = borrowerRepository.findById(id)
-                .orElseThrow(() -> new BorrowerNotFoundException(borrowerNotFoundMsg + id));
+                .orElseThrow(() -> new EntityNotFoundException(borrowerNotFoundMsg + id));
 
-        return new BorrowerResponseDTO(
-                borrower.getId(),
-                borrower.getName(),
-                borrower.getEmail(),
-                borrower.getPhoneNumber(),
-                borrower.getTransactions().stream()
-                        .map(BorrowingTransaction::getId)
-                        .collect(Collectors.toSet())
-        );
+        return mapper.map(borrower, BorrowerResponseDTO.class);
     }
 
     public BorrowerResponseDTO update(UUID id, BorrowerUpdateDTO borrowerUpdateDTO) {
@@ -109,20 +96,14 @@ public class BorrowerService {
         }
 
         Borrower borrower = borrowerRepository.findById(id)
-                .orElseThrow(() -> new BorrowerNotFoundException(borrowerNotFoundMsg + id));
+                .orElseThrow(() -> new EntityNotFoundException(borrowerNotFoundMsg + id));
         borrower.setName(newName);
         borrower.setEmail(newEmail);
         borrower.setPhoneNumber(newPhoneNumber);
 
         borrowerRepository.save(borrower);
 
-        return new BorrowerResponseDTO(
-                borrower.getId(),
-                borrower.getName(),
-                borrower.getEmail(),
-                borrower.getPhoneNumber(),
-                borrower.getTransactions().stream().map(BorrowingTransaction::getId).collect(Collectors.toSet())
-        );
+        return mapper.map(borrower, BorrowerResponseDTO.class);
     }
 
     public void deleteBorrowerById(UUID id){
