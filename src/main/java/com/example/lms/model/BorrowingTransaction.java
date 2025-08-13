@@ -26,7 +26,7 @@ public class BorrowingTransaction {
     private Book book;
 
     @ManyToOne
-    @JoinColumn(name = "borrower_id", referencedColumnName = "id")
+    @JoinColumn(name = "borrower_id", referencedColumnName = "id", nullable = true)
     private Borrower borrower;
 
     @Column(name = "borrow_date", nullable = false)

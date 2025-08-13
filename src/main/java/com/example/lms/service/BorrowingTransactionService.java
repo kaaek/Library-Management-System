@@ -11,6 +11,9 @@ import com.example.lms.model.enums.TransactionStatus;
 import com.example.lms.repository.BookRepository;
 import com.example.lms.repository.BorrowerRepository;
 import com.example.lms.repository.BorrowingTransactionRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 import org.modelmapper.*;
 
@@ -21,10 +24,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class BorrowingTransactionService {
-
-    private final String borrowingNotFoundMsg = "Borrowing not found with ID: ";
-    private final String bookNotFoundMsg = "Book not found with ID: ";
-    private final String borrowerNotFoundMsg = "Borrower not found with ID: ";
 
     private final BookRepository bookRepository;
     private final BorrowerRepository borrowerRepository;
@@ -39,30 +38,33 @@ public class BorrowingTransactionService {
         this.mapper = mapper;
     }
 
+    @Transactional
     public BorrowingTransactionResponseDTO createBorrowing(BorrowingTransactionRequestDTO borrowingTransactionRequestDTO){
         // Fields
-        UUID bookId = borrowingTransactionRequestDTO.getBookId();
-        UUID borrowerId = borrowingTransactionRequestDTO.getBorrowerId();
+        String isbn = borrowingTransactionRequestDTO.getIsbn().strip();
+        String borrowerEmail = borrowingTransactionRequestDTO.getBorrowerEmail().strip().toLowerCase();
 
         // Fetch book
-        Book requestedBook = bookRepository.findById(bookId)
-                .orElseThrow(() -> new EntityNotFoundException(bookNotFoundMsg + bookId));
+        Book requestedBook = bookRepository.findByIsbn(isbn)
+            .orElseThrow(() -> new EntityNotFoundException("Book with ISBN: "+ isbn + " was not found."));
 
         // Check if book is available
         if(!requestedBook.isAvailable()){
-            throw new RuntimeException("Book with ID: " + bookId + " is unavailable for borrowing.");
+            throw new RuntimeException("Book with ISBN: " + isbn + " is unavailable for borrowing.");
         }
 
+        // Update book availability
+        requestedBook.setAvailable(false);
+        bookRepository.save(requestedBook);
+
         // Fetch borrower
-        Borrower borrower = borrowerRepository.findById(borrowerId)
-                .orElseThrow(() -> new EntityNotFoundException(borrowerNotFoundMsg + borrowerId));
+        Borrower borrower = borrowerRepository.findByEmail(borrowerEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Borrower with e-mail: " + borrowerEmail + " was not found."));
 
         // Build transaction
-
         LocalDate borrowDate = LocalDate.now();
         LocalDate returnDate = borrowDate.plusMonths(1);
         TransactionStatus status = TransactionStatus.BORROWED;
-
 
         BorrowingTransaction newBorrowingTransaction = new BorrowingTransaction(
                 requestedBook,
@@ -93,7 +95,7 @@ public class BorrowingTransactionService {
 
     public BorrowingTransactionResponseDTO getBorrowingById(UUID id) {
         BorrowingTransaction transaction = borrowingTransactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(borrowingNotFoundMsg + id));
+                .orElseThrow(() -> new EntityNotFoundException("Borrowing with ID: " + id + " was not found."));
 
         return mapper.map(transaction, BorrowingTransactionResponseDTO.class);
     }
@@ -101,9 +103,9 @@ public class BorrowingTransactionService {
     public BorrowingTransactionResponseDTO updateBorrowing(UUID id, BorrowingTransactionUpdateDTO borrowingTransactionUpdateDTO) {
 
         // Fields
-
-        Borrower newBorrower = borrowerRepository.findById(borrowingTransactionUpdateDTO.getBorrowerId())
-                .orElseThrow(() -> new EntityNotFoundException(borrowerNotFoundMsg + borrowingTransactionUpdateDTO.getBorrowerId()));
+        String newEmail = borrowingTransactionUpdateDTO.getBorrowerEmail().strip().toLowerCase();
+        Borrower newBorrower = borrowerRepository.findByEmail(newEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Borrower with e-mail: " + newEmail + " was not found."));
 
         LocalDate newBorrowDate = borrowingTransactionUpdateDTO.getBorrowDate();
 
@@ -157,6 +159,7 @@ public class BorrowingTransactionService {
     }
 
     public void deleteBorrowingById(UUID id){
+            
         borrowingTransactionRepository.delete(borrowingTransactionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Borrowing transaction not found")));
     }

@@ -8,6 +8,7 @@ import com.example.lms.repository.BorrowerRepository;
 import com.example.lms.repository.BorrowingTransactionRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,12 @@ public class BorrowerService {
     private final String phoneNumberExistsMsg = "Phone number already exists: ";
 
     private BorrowerRepository borrowerRepository;
+    private BorrowingTransactionRepository borrowingTransactionRepository;
     private ModelMapper mapper;
 
     public BorrowerService(BorrowerRepository borrowerRepository, BorrowingTransactionRepository borrowingTransactionRepository, ModelMapper mapper){
         this.borrowerRepository = borrowerRepository;
+        this.borrowingTransactionRepository = borrowingTransactionRepository;
         this.mapper = mapper;
     }
 
@@ -110,11 +113,20 @@ public class BorrowerService {
         return mapper.map(borrower, BorrowerResponseDTO.class);
     }
 
+    @Transactional
     public void deleteBorrowerById(UUID id){
-        borrowerRepository.deleteById(id);
+
+        Borrower borrower = borrowerRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException());
+
+        borrowingTransactionRepository.deleteByBorrower(borrower);
+
+        borrowerRepository.delete(borrower);
     }
 
+    @Transactional
     public void deleteAllBorrowers(){
+        borrowingTransactionRepository.deleteAll();
         borrowerRepository.deleteAll();
     }
 

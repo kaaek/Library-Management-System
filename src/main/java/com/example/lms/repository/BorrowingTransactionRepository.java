@@ -13,4 +13,5 @@ import java.util.UUID;
 public interface BorrowingTransactionRepository extends JpaRepository<BorrowingTransaction, UUID> {
     List<BorrowingTransaction> findByBorrower(Borrower borrower);
     List<BorrowingTransaction> findByBook(Book book);
+    void deleteByBorrower(Borrower borrower);
 }

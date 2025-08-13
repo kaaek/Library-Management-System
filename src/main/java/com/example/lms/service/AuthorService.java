@@ -13,7 +13,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class AuthorService {
@@ -35,12 +34,12 @@ public class AuthorService {
                         author.getId(),
                         author.getName(),
                         author.getBiography(),
-                        bookRepository.findByAuthor_NameContainingIgnoreCase(author.getName())
+                        bookRepository.findByAuthor(author)
                                 .stream()
-                                .map(Book::getId)
+                                .map(Book::getIsbn)
                                 .toList()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public AuthorResponseDTO getAuthorById(UUID id){
@@ -50,10 +49,10 @@ public class AuthorService {
                 author.getId(),
                 author.getName(),
                 author.getBiography(),
-                bookRepository.findByAuthor_NameContainingIgnoreCase(author.getName())
-                        .stream()
-                        .map(Book::getId)
-                        .toList()
+                bookRepository.findByAuthor(author)
+                                .stream()
+                                .map(Book::getIsbn)
+                                .toList()
         );
     }
 
@@ -94,10 +93,10 @@ public class AuthorService {
                 newAuthor.getId(),
                 newAuthor.getName(),
                 newAuthor.getBiography(),
-                bookRepository.findByAuthor_NameContainingIgnoreCase(newAuthor.getName())
-                        .stream()
-                        .map(Book::getId)
-                        .toList()
+                bookRepository.findByAuthor(newAuthor)
+                                .stream()
+                                .map(Book::getIsbn)
+                                .toList()
         );
     }
 
@@ -123,10 +122,10 @@ public class AuthorService {
                 author.getId(),
                 author.getName(),
                 author.getBiography(),
-                bookRepository.findByAuthor_NameContainingIgnoreCase(author.getName())
-                        .stream()
-                        .map(Book::getId)
-                        .toList()
+                bookRepository.findByAuthor(author)
+                                .stream()
+                                .map(Book::getIsbn)
+                                .toList()
         );
     }
 

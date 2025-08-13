@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class AuthorUpdateDTO {
     private String name;
     private String biography;
-    //private Set<UUID> bookIds;
 }
