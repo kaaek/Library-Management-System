@@ -5,12 +5,15 @@ import com.example.lms.dto.book.BookUpdateDTO;
 import com.example.lms.exception.EntityNotFoundException;
 import com.example.lms.model.Author;
 import com.example.lms.model.Book;
+import com.example.lms.model.BorrowingTransaction;
 import com.example.lms.model.enums.Category;
 import com.example.lms.repository.AuthorRepository;
 import com.example.lms.repository.BookRepository;
+import com.example.lms.repository.BorrowingTransactionRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,11 +26,13 @@ public class BookService {
     private final ModelMapper modelMapper;
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
+    private final BorrowingTransactionRepository borrowingTransactionRepository;
 
-    public BookService(ModelMapper modelMapper, BookRepository bookRepository, AuthorRepository authorRepository) {
+    public BookService(ModelMapper modelMapper, BookRepository bookRepository, AuthorRepository authorRepository, BorrowingTransactionRepository borrowingTransactionRepository) {
         this.modelMapper = modelMapper;
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
+        this.borrowingTransactionRepository = borrowingTransactionRepository;
     }
 
     public List<BookResponseDTO> getAllBooks(){
@@ -170,8 +175,9 @@ public class BookService {
 
     public BookResponseDTO update(UUID bookId, BookUpdateDTO bookUpdateDTO) {
         // Fields:
-        String newTitle = bookUpdateDTO.getTitle();
-        String newIsbn = bookUpdateDTO.getIsbn();
+        String newTitle = bookUpdateDTO.getTitle().strip();
+        // String newIsbn = bookUpdateDTO.getIsbn().strip();
+        String newIsbn = Optional.ofNullable(bookUpdateDTO.getIsbn()).orElse("").strip();
         Category newCategory = bookUpdateDTO.getCategory();
         UUID newAuthorId = bookUpdateDTO.getAuthorId();
         boolean newAvailable = bookUpdateDTO.isAvailable();
@@ -186,15 +192,16 @@ public class BookService {
 
         // Set fields
         book.setTitle(newTitle);
+
+        // ISBNs are different:
+        if(!(book.getIsbn().equalsIgnoreCase(newIsbn)) && bookRepository.existsByIsbn(newIsbn)){
+                throw new IllegalArgumentException("Book already exists with ISBN: " + newIsbn + ". Provide a unique ISBN.");
+        }
+
         book.setIsbn(newIsbn);
         book.setCategory(newCategory);
         book.setAvailable(newAvailable);
-
-        // Author:
-        Author oldAuthor = book.getAuthor();
-        if (!oldAuthor.equals(author)) { // Author changed.
-            book.setAuthor(author);
-        }
+        book.setAuthor(author);
 
         // Persist
         bookRepository.save(book);
@@ -208,11 +215,18 @@ public class BookService {
         // Find book.
         Book book = bookRepository.findById(bookId).orElseThrow(() -> new EntityNotFoundException(bookNotFoundMsg + bookId));
 
+        // There's no need keeping the transactions tied to this book anymore, cascade delete.
+        List<BorrowingTransaction> queries = borrowingTransactionRepository.findByBook(book);
+        for (BorrowingTransaction transaction : queries) {
+                borrowingTransactionRepository.delete(transaction);
+        }
+
         // Flush
         bookRepository.delete(book);
     }
 
     public void deleteAll() {
+        borrowingTransactionRepository.deleteAll(); // Cascade delete
         bookRepository.deleteAll();
     }
 }

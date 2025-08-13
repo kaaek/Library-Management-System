@@ -32,9 +32,9 @@ public class BorrowerService {
 
     public BorrowerResponseDTO createBorrower(BorrowerRequestDTO borrowerRequestDTO) {
         // Fields
-        String newName = borrowerRequestDTO.getName();
-        String newEmail = borrowerRequestDTO.getEmail();
-        String newPhoneNumber = borrowerRequestDTO.getPhoneNumber();
+        String newName = borrowerRequestDTO.getName().strip();
+        String newEmail = borrowerRequestDTO.getEmail().strip().toLowerCase();
+        String newPhoneNumber = borrowerRequestDTO.getPhoneNumber().strip();
 
 
         if(emailExists(newEmail)){
@@ -84,19 +84,23 @@ public class BorrowerService {
 
     public BorrowerResponseDTO update(UUID id, BorrowerUpdateDTO borrowerUpdateDTO) {
         // Fields
-        String newName = borrowerUpdateDTO.getName();
-        String newEmail = borrowerUpdateDTO.getEmail();
-        String newPhoneNumber = borrowerUpdateDTO.getPhoneNumber();
-
-        if(emailExists(newEmail)){
-            throw new IllegalArgumentException(emailExistsMsg+newEmail);
-        }
-        if(phoneNumberExists(newPhoneNumber)){
-            throw new IllegalArgumentException(phoneNumberExistsMsg+newPhoneNumber);
-        }
+        String newName = borrowerUpdateDTO.getName().strip();
+        String newEmail = borrowerUpdateDTO.getEmail().strip().toLowerCase();
+        String newPhoneNumber = borrowerUpdateDTO.getPhoneNumber().strip();
 
         Borrower borrower = borrowerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(borrowerNotFoundMsg + id));
+        
+        String oldEmail = borrower.getEmail();
+        String oldPhoneNumber = borrower.getPhoneNumber();
+
+        if(!(newEmail.equalsIgnoreCase(oldEmail)) &&  emailExists(newEmail)){
+            throw new IllegalArgumentException(emailExistsMsg+newEmail);
+        }
+        if(!(newPhoneNumber.equalsIgnoreCase(oldPhoneNumber)) && phoneNumberExists(newPhoneNumber)){
+            throw new IllegalArgumentException(phoneNumberExistsMsg+newPhoneNumber);
+        }
+        
         borrower.setName(newName);
         borrower.setEmail(newEmail);
         borrower.setPhoneNumber(newPhoneNumber);

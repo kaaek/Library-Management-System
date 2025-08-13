@@ -30,7 +30,6 @@ public class BorrowingTransactionService {
     private final BorrowerRepository borrowerRepository;
     private final BorrowingTransactionRepository borrowingTransactionRepository; 
 
-
     private ModelMapper mapper;
 
     public BorrowingTransactionService(BorrowingTransactionRepository borrowingTransactionRepository, BookRepository bookRepository, BorrowerRepository borrowerRepository, ModelMapper mapper) {
@@ -75,14 +74,7 @@ public class BorrowingTransactionService {
 
         borrowingTransactionRepository.save(newBorrowingTransaction);
 
-        return new BorrowingTransactionResponseDTO(
-                newBorrowingTransaction.getId(),
-                newBorrowingTransaction.getBook().getId(),
-                newBorrowingTransaction.getBorrower().getId(),
-                newBorrowingTransaction.getBorrowDate(),
-                newBorrowingTransaction.getReturnDate(),
-                newBorrowingTransaction.getStatus()
-        );
+        return mapper.map(newBorrowingTransaction, BorrowingTransactionResponseDTO.class);
     }
 
     public List<BorrowingTransactionResponseDTO> getAllBorrowings(){
@@ -100,17 +92,10 @@ public class BorrowingTransactionService {
     }
 
     public BorrowingTransactionResponseDTO getBorrowingById(UUID id) {
-        BorrowingTransaction newBorrowingTransaction = borrowingTransactionRepository.findById(id)
+        BorrowingTransaction transaction = borrowingTransactionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(borrowingNotFoundMsg + id));
 
-        return new BorrowingTransactionResponseDTO(
-                newBorrowingTransaction.getId(),
-                newBorrowingTransaction.getBook().getId(),
-                newBorrowingTransaction.getBorrower().getId(),
-                newBorrowingTransaction.getBorrowDate(),
-                newBorrowingTransaction.getReturnDate(),
-                newBorrowingTransaction.getStatus()
-        );
+        return mapper.map(transaction, BorrowingTransactionResponseDTO.class);
     }
 
     public BorrowingTransactionResponseDTO updateBorrowing(UUID id, BorrowingTransactionUpdateDTO borrowingTransactionUpdateDTO) {

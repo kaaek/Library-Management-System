@@ -29,11 +29,8 @@ public class Book {
     private Category category;
 
     @ManyToOne
-    @JoinColumn(name = "author_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "author_id", referencedColumnName = "id")
     private Author author;
-
-//    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<BorrowingTransaction> transactions = new HashSet<>();
 
     @Column(name = "available", nullable = false)
     private boolean available;

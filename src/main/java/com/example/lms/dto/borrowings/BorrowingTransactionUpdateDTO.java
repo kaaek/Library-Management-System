@@ -12,7 +12,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BorrowingTransactionUpdateDTO {
-    private UUID id;
     private UUID borrowerId;
     private LocalDate borrowDate;
     private LocalDate returnDate;
