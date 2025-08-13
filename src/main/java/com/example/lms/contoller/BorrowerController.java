@@ -4,6 +4,8 @@ import com.example.lms.dto.borrower.BorrowerRequestDTO;
 import com.example.lms.dto.borrower.BorrowerResponseDTO;
 import com.example.lms.dto.borrower.BorrowerUpdateDTO;
 import com.example.lms.service.BorrowerService;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,33 +22,39 @@ public class BorrowerController {
     }
 
     @PostMapping("/new")
-    public BorrowerResponseDTO createBorrower(@RequestBody BorrowerRequestDTO borrowerRequestDTO) {
-        return borrowerService.createBorrower(borrowerRequestDTO);
+    public ResponseEntity<BorrowerResponseDTO> createBorrower(@RequestBody BorrowerRequestDTO borrowerRequestDTO) {
+        BorrowerResponseDTO dto = borrowerService.createBorrower(borrowerRequestDTO);
+        return ResponseEntity.status(201).body(dto);
     }
 
     @GetMapping("/all")
-    public List<BorrowerResponseDTO> getAllBorrowers() {
-        return borrowerService.getAllBorrowers();
+    public ResponseEntity<List<BorrowerResponseDTO>> getAllBorrowers() {
+        List<BorrowerResponseDTO> dtos = borrowerService.getAllBorrowers();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    public BorrowerResponseDTO getBorrowerById(@PathVariable UUID id){
-        return borrowerService.getBorrowerById(id);
+    public ResponseEntity<BorrowerResponseDTO> getBorrowerById(@PathVariable UUID id){
+        BorrowerResponseDTO dto = borrowerService.getBorrowerById(id);
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{id}")
-    public BorrowerResponseDTO update(@PathVariable UUID id, @RequestBody BorrowerUpdateDTO borrowerUpdateDTO) {
-        return borrowerService.update(id, borrowerUpdateDTO);
+    public ResponseEntity<BorrowerResponseDTO> update(@PathVariable UUID id, @RequestBody BorrowerUpdateDTO borrowerUpdateDTO) {
+        BorrowerResponseDTO dto = borrowerService.update(id, borrowerUpdateDTO);
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteBorrower(@PathVariable UUID id){
+    public ResponseEntity<String> deleteBorrower(@PathVariable UUID id){
         borrowerService.deleteBorrowerById(id);
+        return ResponseEntity.ok("Borrower with id " + id + " was deleted");
     }
 
     @DeleteMapping("/all")
-    public void deleteAll(){
+    public ResponseEntity<String> deleteAll(){
         borrowerService.deleteAllBorrowers();
+        return ResponseEntity.ok("Borrowers were flushed successfully.");
     }
 
 }

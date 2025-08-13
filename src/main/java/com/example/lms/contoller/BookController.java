@@ -22,13 +22,15 @@ public class BookController {
     }
 
     @GetMapping("/all")
-    public List<BookResponseDTO> getAllBooks(){
-        return bookService.getAllBooks();
+    public ResponseEntity<List<BookResponseDTO>> getAllBooks(){
+        List<BookResponseDTO> dtos = bookService.getAllBooks();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    public BookResponseDTO getBookById(@PathVariable UUID id){
-        return bookService.getBookById(id);
+    public ResponseEntity<BookResponseDTO> getBookById(@PathVariable UUID id){
+        BookResponseDTO dto = bookService.getBookById(id);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/search")
@@ -62,22 +64,26 @@ public class BookController {
 
 
     @PostMapping("/new")
-    public BookResponseDTO createBook(@RequestBody BookRequestDTO bookRequestDTO){
-        return bookService.createBook(bookRequestDTO);
+    public ResponseEntity<BookResponseDTO> createBook(@RequestBody BookRequestDTO bookRequestDTO){
+        BookResponseDTO dto = bookService.createBook(bookRequestDTO);
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{id}")
-    public BookResponseDTO updateBook(@PathVariable UUID id, @RequestBody BookUpdateDTO bookUpdateDTO){
-        return bookService.update(id, bookUpdateDTO);
+    public ResponseEntity<BookResponseDTO> updateBook(@PathVariable UUID id, @RequestBody BookUpdateDTO bookUpdateDTO){
+        BookResponseDTO dto = bookService.update(id, bookUpdateDTO);
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteBook(@PathVariable UUID id){
+    public ResponseEntity<String> deleteBook(@PathVariable UUID id){
         bookService.deleteById(id);
+        return ResponseEntity.ok("Book with id" + id + " was deleted.");
     }
 
     @DeleteMapping("/all")
-    public void deleteAll(){
+    public ResponseEntity<String> deleteAll(){
         bookService.deleteAll();
+        return ResponseEntity.ok("Books were flushed successfully.");
     }
 }

@@ -35,4 +35,8 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
 
     List <Book> findByCategoryAndAuthor_NameContainingIgnoreCase(Category category, String authorName);
 
+    Book findByIsbn(String isbn);
+
+    boolean existsByIsbn(String isbn);
+
 }

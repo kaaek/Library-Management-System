@@ -4,7 +4,6 @@ import com.example.lms.dto.author.AuthorRequestDTO;
 import com.example.lms.dto.author.AuthorResponseDTO;
 import com.example.lms.dto.author.AuthorUpdateDTO;
 import com.example.lms.dto.book.BookResponseDTO;
-import com.example.lms.dto.response.ApiResponse;
 import com.example.lms.exception.EntityNotFoundException;
 import com.example.lms.model.Author;
 import com.example.lms.model.Book;
@@ -80,8 +79,8 @@ public class AuthorService {
     public AuthorResponseDTO createAuthor(AuthorRequestDTO authorRequestDTO){
 
         // Fields
-        String newName = authorRequestDTO.getName();
-        String newBio = authorRequestDTO.getBiography();
+        String newName = authorRequestDTO.getName().strip();
+        String newBio = authorRequestDTO.getBiography().strip();
 
         // Check if author already exists
         if(!authorRepository.findByNameContainingIgnoreCase(newName).isEmpty()) {

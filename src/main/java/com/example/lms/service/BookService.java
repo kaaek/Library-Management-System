@@ -153,6 +153,11 @@ public class BookService {
         // Find author.
         Author author = authorRepository.findById(authorId).orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
 
+        // Check if ISBN exists
+        if(bookRepository.existsByIsbn(isbn)){
+                throw new IllegalArgumentException("Book already exists with ISBN: "+isbn);
+        }
+
         // New book object
         Book newBook = new Book(title, isbn, category, author, true);
 

@@ -4,8 +4,9 @@ import com.example.lms.dto.author.AuthorRequestDTO;
 import com.example.lms.dto.author.AuthorResponseDTO;
 import com.example.lms.dto.author.AuthorUpdateDTO;
 import com.example.lms.dto.book.BookResponseDTO;
-import com.example.lms.dto.response.ApiResponse;
 import com.example.lms.service.AuthorService;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,37 +23,44 @@ public class AuthorController {
     }
 
     @GetMapping("/all")
-    public List<AuthorResponseDTO> getAllAuthors(){
-        return authorService.getAllAuthors();
+    public ResponseEntity<List<AuthorResponseDTO>> getAllAuthors(){
+        List<AuthorResponseDTO> dtos = authorService.getAllAuthors();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    public AuthorResponseDTO getAuthorById(@PathVariable UUID id){
-        return authorService.getAuthorById(id);
+    public ResponseEntity<AuthorResponseDTO> getAuthorById(@PathVariable UUID id){
+        AuthorResponseDTO dto = authorService.getAuthorById(id);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{id}/books")
-    public List<BookResponseDTO> getBooksByAuthorById(@PathVariable UUID id){
-        return authorService.getBooksByAuthorById(id);
+    public ResponseEntity<List<BookResponseDTO>> getBooksByAuthorById(@PathVariable UUID id){
+        List<BookResponseDTO> dtos = authorService.getBooksByAuthorById(id);
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping("/new")
-    public AuthorResponseDTO createAuthor(@RequestBody AuthorRequestDTO authorRequestDTO){
-        return authorService.createAuthor(authorRequestDTO);
+    public ResponseEntity<AuthorResponseDTO> createAuthor(@RequestBody AuthorRequestDTO authorRequestDTO){
+        AuthorResponseDTO dto = authorService.createAuthor(authorRequestDTO);
+        return ResponseEntity.status(201).body(dto);
     }
 
     @PutMapping("/{id}")
-    public AuthorResponseDTO updateAuthor(@PathVariable UUID id, @RequestBody AuthorUpdateDTO authorUpdateDTO){
-        return authorService.update(id, authorUpdateDTO);
+    public ResponseEntity<AuthorResponseDTO> updateAuthor(@PathVariable UUID id, @RequestBody AuthorUpdateDTO authorUpdateDTO){
+        AuthorResponseDTO dto = authorService.update(id, authorUpdateDTO);
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteAuthor(@PathVariable UUID id){
+    public ResponseEntity<String> deleteAuthor(@PathVariable UUID id){
         authorService.deleteAuthorById(id);
+        return ResponseEntity.ok("Author with id "+id+"was deleted.");
     }
 
     @DeleteMapping("/all")
-    public void deleteAll(){
+    public ResponseEntity<String> deleteAll(){
         authorService.deleteAllAuthors();
+        return ResponseEntity.ok("Authors were flushed successfully.");
     }
 }

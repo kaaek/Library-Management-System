@@ -23,12 +23,10 @@ public class BorrowerService {
     private final String phoneNumberExistsMsg = "Phone number already exists: ";
 
     private BorrowerRepository borrowerRepository;
-    // private BorrowingTransactionRepository borrowingTransactionRepository;
     private ModelMapper mapper;
 
     public BorrowerService(BorrowerRepository borrowerRepository, BorrowingTransactionRepository borrowingTransactionRepository, ModelMapper mapper){
         this.borrowerRepository = borrowerRepository;
-        // this.borrowingTransactionRepository = borrowingTransactionRepository;
         this.mapper = mapper;
     }
 
@@ -81,6 +79,8 @@ public class BorrowerService {
 
         return mapper.map(borrower, BorrowerResponseDTO.class);
     }
+
+    
 
     public BorrowerResponseDTO update(UUID id, BorrowerUpdateDTO borrowerUpdateDTO) {
         // Fields
