@@ -43,34 +43,8 @@ Built with Java, Spring Boot, Spring Data JPA, and Gradle.
 - **Spring Boot** (Web, Data JPA)
 - **Hibernate** (ORM)
 - **Gradle** (Build Tool)
-- **H2 / MySQL** (Database — configurable)
+- **PostgreSQL** (Database)
 - **Swagger** (API documentation)
-
----
-
-## API Endpoints
-
-### Authors
-- `GET /api/authors` – List all authors
-- `POST /api/authors` – Add a new author
-- `PUT /api/authors/{id}` – Update author
-- `DELETE /api/authors/{id}` – Delete author
-
-### Books
-- `GET /api/books` – List all books
-- `POST /api/books` – Add a new book
-- `PUT /api/books/{id}` – Update book
-- `DELETE /api/books/{id}` – Delete book
-
-### Borrowers
-- `GET /api/borrowers` – List all borrowers
-- `POST /api/borrowers` – Add a new borrower
-- `PUT /api/borrowers/{id}` – Update borrower
-- `DELETE /api/borrowers/{id}` – Delete borrower
-
-### Borrowing Transactions
-- `POST /api/borrowings` – Borrow a book
-- `PUT /api/borrowings/{id}/return` – Return a book
 
 ---
 
@@ -78,7 +52,7 @@ Built with Java, Spring Boot, Spring Data JPA, and Gradle.
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/kaaek/Library-Management-System/tree/main
    cd library-management-system
 2. **Build and run using Gradle**
    ```bash
