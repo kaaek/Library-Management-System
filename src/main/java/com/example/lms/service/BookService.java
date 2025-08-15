@@ -18,7 +18,7 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Optional;
+// import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class BookService {
 
     private final String bookNotFoundMsg = "Book not found with ID: ";
-    private final String authorNotFoundMsg = "Author not found with ID: ";
+//     private final String authorNotFoundMsg = "Author not found with ID: ";
 
     private final ModelMapper modelMapper;
     private final BookRepository bookRepository;
@@ -201,11 +201,11 @@ public class BookService {
 
     public BookResponseDTO update(UUID bookId, BookUpdateDTO bookUpdateDTO) {
         // Fields:
-        String newTitle = bookUpdateDTO.getTitle().strip();
+        // String newTitle = bookUpdateDTO.getTitle().strip();
         // String newIsbn = bookUpdateDTO.getIsbn().strip();
-        String newIsbn = Optional.ofNullable(bookUpdateDTO.getIsbn()).orElse("").strip();
+        // String newIsbn = Optional.ofNullable(bookUpdateDTO.getIsbn()).orElse("").strip();
         Category newCategory = bookUpdateDTO.getCategory();
-        UUID newAuthorId = bookUpdateDTO.getAuthorId();
+        // UUID newAuthorId = bookUpdateDTO.getAuthorId();
         boolean newAvailable = bookUpdateDTO.isAvailable();
 
         // Find book.
@@ -213,21 +213,21 @@ public class BookService {
                 .orElseThrow(() -> new EntityNotFoundException(bookNotFoundMsg + bookId));
 
         // Find author.
-        Author author = authorRepository.findById(newAuthorId)
-                .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + newAuthorId));
+        // Author author = authorRepository.findById(newAuthorId)
+        //         .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + newAuthorId));
 
         // Set fields
-        book.setTitle(newTitle);
+        // book.setTitle(newTitle);
 
         // ISBNs are different:
-        if(!(book.getIsbn().equalsIgnoreCase(newIsbn)) && bookRepository.existsByIsbn(newIsbn)){
-                throw new IllegalArgumentException("Book already exists with ISBN: " + newIsbn + ". Provide a unique ISBN.");
-        }
+        // if(!(book.getIsbn().equalsIgnoreCase(newIsbn)) && bookRepository.existsByIsbn(newIsbn)){
+                // throw new IllegalArgumentException("Book already exists with ISBN: " + newIsbn + ". Provide a unique ISBN.");
+        // }
 
-        book.setIsbn(newIsbn);
+        // book.setIsbn(newIsbn);
         book.setCategory(newCategory);
         book.setAvailable(newAvailable);
-        book.setAuthor(author);
+        // book.setAuthor(author);
 
         // Persist
         bookRepository.save(book);

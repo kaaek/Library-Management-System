@@ -4,6 +4,7 @@ import com.example.lms.dto.borrowings.BorrowingTransactionRequestDTO;
 import com.example.lms.dto.borrowings.BorrowingTransactionResponseDTO;
 import com.example.lms.dto.borrowings.BorrowingTransactionUpdateDTO;
 import com.example.lms.exception.EntityNotFoundException;
+import com.example.lms.exception.MaxBorrowingsException;
 import com.example.lms.model.Book;
 import com.example.lms.model.Borrower;
 import com.example.lms.model.BorrowingTransaction;
@@ -14,6 +15,7 @@ import com.example.lms.repository.BorrowingTransactionRepository;
 
 import jakarta.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.modelmapper.*;
 
@@ -24,6 +26,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class BorrowingTransactionService {
+
+    @Value("${borrower.transaction.limit}")
+    private int transactionLimit;
 
     private final BookRepository bookRepository;
     private final BorrowerRepository borrowerRepository;
@@ -53,13 +58,20 @@ public class BorrowingTransactionService {
             throw new RuntimeException("Book with ISBN: " + isbn + " is unavailable for borrowing.");
         }
 
-        // Update book availability
-        requestedBook.setAvailable(false);
-        bookRepository.save(requestedBook);
-
         // Fetch borrower
         Borrower borrower = borrowerRepository.findByEmail(borrowerEmail)
                 .orElseThrow(() -> new EntityNotFoundException("Borrower with e-mail: " + borrowerEmail + " was not found."));
+
+        // Borrower must have at most 4 borrowings:
+        // List<BorrowingTransaction> transactions = borrowingTransactionRepository.findByBorrower(borrower);
+        // if(transactions.size() >= transactionLimit) { // Reject
+        //     throw new MaxBorrowingsException("Borrower with e-mail: " + borrowerEmail + " has reached their borrowing limit, and cannot borrow more books.");
+        // }
+        // Problem with this logic: db holds all history. How do we check for pending borrowings??
+
+        // Update book availability
+        requestedBook.setAvailable(false);
+        bookRepository.save(requestedBook);
 
         // Build transaction
         LocalDate borrowDate = LocalDate.now();
