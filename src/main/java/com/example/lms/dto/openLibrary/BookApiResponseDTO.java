@@ -10,12 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookApiResponseDTO {
+    private String url;
+    private String key;
     private String title;
-    private List<Author> authors;
-
-    @Data
-    public static class Author {
-        private String name;
-    }
+    private List<AuthorApiResponseDTO> authors;
     
 }

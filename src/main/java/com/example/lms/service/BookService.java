@@ -2,6 +2,8 @@ package com.example.lms.service;
 import com.example.lms.dto.book.BookRequestDTO;
 import com.example.lms.dto.book.BookResponseDTO;
 import com.example.lms.dto.book.BookUpdateDTO;
+import com.example.lms.dto.openLibrary.AuthorApiResponseDTO;
+import com.example.lms.dto.openLibrary.BookApiResponseDTO;
 import com.example.lms.exception.EntityNotFoundException;
 import com.example.lms.model.Author;
 import com.example.lms.model.Book;
@@ -10,6 +12,9 @@ import com.example.lms.model.enums.Category;
 import com.example.lms.repository.AuthorRepository;
 import com.example.lms.repository.BookRepository;
 import com.example.lms.repository.BorrowingTransactionRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -27,12 +32,14 @@ public class BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final BorrowingTransactionRepository borrowingTransactionRepository;
+    private final OpenLibraryApiService openLibraryApiService;
 
-    public BookService(ModelMapper modelMapper, BookRepository bookRepository, AuthorRepository authorRepository, BorrowingTransactionRepository borrowingTransactionRepository) {
+    public BookService(ModelMapper modelMapper, BookRepository bookRepository, AuthorRepository authorRepository, BorrowingTransactionRepository borrowingTransactionRepository, OpenLibraryApiService openLibraryApiService) {
         this.modelMapper = modelMapper;
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.borrowingTransactionRepository = borrowingTransactionRepository;
+        this.openLibraryApiService = openLibraryApiService;
     }
 
     public List<BookResponseDTO> getAllBooks(){
@@ -147,20 +154,39 @@ public class BookService {
                 .collect(Collectors.toList());
     }
 
-
+    @Transactional
     public BookResponseDTO createBook(BookRequestDTO bookRequestDTO) {
-        // Fields:
-        String title = bookRequestDTO.getTitle().strip();
+        
+        // 1. Extract fields from the DTO
         String isbn = bookRequestDTO.getIsbn().strip();
-        Category category = bookRequestDTO.getCategory();
-        UUID authorId = bookRequestDTO.getAuthorId();
 
-        // Find author.
-        Author author = authorRepository.findById(authorId).orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + authorId));
-
-        // Check if ISBN exists
+        // Check if ISBN exists in db
         if(bookRepository.existsByIsbn(isbn)){
                 throw new IllegalArgumentException("Book already exists with ISBN: "+isbn);
+        }
+
+        Category category = bookRequestDTO.getCategory();
+
+        // 2. Fetch book from Open Library
+        BookApiResponseDTO responseDTO = openLibraryApiService.fetchBook(isbn);
+
+        // 3. Extract fields from Open Library's response
+        // Title
+        String title = responseDTO.getTitle();
+
+        // Author: name
+        List<AuthorApiResponseDTO> authors = responseDTO.getAuthors();
+        String authorName = (authors != null && !authors.isEmpty()) 
+                        ? authors.get(0).getName() 
+                        : "Unknown Author";
+        
+        // Author: find in DB.
+        List<Author> query = authorRepository.findByNameContainingIgnoreCase(authorName);
+        Author author;
+        if(!query.isEmpty()) {
+                author = query.get(0);
+        } else {
+                author = authorRepository.save(new Author(authorName, "")); // TODO: Retreive the biography at a later point.
         }
 
         // New book object
