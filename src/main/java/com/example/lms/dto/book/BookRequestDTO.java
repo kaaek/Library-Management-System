@@ -9,16 +9,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+// import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @NotNull
 public class BookRequestDTO {
-    private String title;
+    // private String title;
     private String isbn;
     @Enumerated(EnumType.STRING)
     private Category category;
-    private UUID authorId;
+    // private UUID authorId;
 }

@@ -28,7 +28,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BookResponseDTO> getBookById(@PathVariable UUID id){
+    public ResponseEntity<BookResponseDTO> getBookById(@PathVariable ("id") UUID id){
         BookResponseDTO dto = bookService.getBookById(id);
         return ResponseEntity.ok(dto);
     }
@@ -70,13 +70,13 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BookResponseDTO> updateBook(@PathVariable UUID id, @RequestBody BookUpdateDTO bookUpdateDTO){
+    public ResponseEntity<BookResponseDTO> updateBook(@PathVariable ("id") UUID id, @RequestBody BookUpdateDTO bookUpdateDTO){
         BookResponseDTO dto = bookService.update(id, bookUpdateDTO);
         return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBook(@PathVariable UUID id){
+    public ResponseEntity<String> deleteBook(@PathVariable ("id") UUID id){
         bookService.deleteById(id);
         return ResponseEntity.ok("Book with id" + id + " was deleted.");
     }
