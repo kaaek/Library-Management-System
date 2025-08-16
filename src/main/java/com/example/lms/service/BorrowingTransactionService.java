@@ -63,11 +63,10 @@ public class BorrowingTransactionService {
                 .orElseThrow(() -> new EntityNotFoundException("Borrower with e-mail: " + borrowerEmail + " was not found."));
 
         // Borrower must have at most 4 borrowings:
-        // List<BorrowingTransaction> transactions = borrowingTransactionRepository.findByBorrower(borrower);
-        // if(transactions.size() >= transactionLimit) { // Reject
-        //     throw new MaxBorrowingsException("Borrower with e-mail: " + borrowerEmail + " has reached their borrowing limit, and cannot borrow more books.");
-        // }
-        // Problem with this logic: db holds all history. How do we check for pending borrowings??
+        long activeBorrowings = borrowingTransactionRepository.countByBorrowerAndStatus(borrower, TransactionStatus.BORROWED);
+        if(activeBorrowings >= transactionLimit) { // Reject
+            throw new MaxBorrowingsException("Borrower with e-mail: " + borrowerEmail + " has reached their borrowing limit, and cannot borrow more books.");
+        }
 
         // Update book availability
         requestedBook.setAvailable(false);
@@ -131,6 +130,15 @@ public class BorrowingTransactionService {
 
         // Fetch book
         Book book = transaction.getBook();
+
+        // If changing the borrower:
+        Borrower oldBorrower = transaction.getBorrower();
+        if(!newBorrower.equals(oldBorrower)){
+            long activeBorrowings = borrowingTransactionRepository.countByBorrowerAndStatus(newBorrower, TransactionStatus.BORROWED);
+            if(activeBorrowings >= transactionLimit) { // Reject
+                throw new MaxBorrowingsException("Borrower with e-mail: " + newEmail + " has reached their borrowing limit, and cannot borrow more books.");
+            }
+        }
 
         // Status constraints
         if (transaction.getStatus() == TransactionStatus.RETURNED &&
