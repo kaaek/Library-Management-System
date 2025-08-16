@@ -97,7 +97,7 @@ public class BorrowingTransactionService {
     }
 
     public void sendEmail(String email, String bookTitle) {
-        emailClient.sendEmail(new EmailRequest(email, "Book" + bookTitle + "borrowed successfully."));
+        emailClient.sendEmail(new EmailRequest(email, "Book " + bookTitle + " borrowed successfully."));
     }
 
     public List<BorrowingTransactionResponseDTO> getAllBorrowings(){
