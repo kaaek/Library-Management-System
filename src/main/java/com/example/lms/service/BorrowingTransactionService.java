@@ -3,6 +3,7 @@ package com.example.lms.service;
 import com.example.lms.dto.borrowings.BorrowingTransactionRequestDTO;
 import com.example.lms.dto.borrowings.BorrowingTransactionResponseDTO;
 import com.example.lms.dto.borrowings.BorrowingTransactionUpdateDTO;
+import com.example.lms.dto.email.EmailRequest;
 import com.example.lms.exception.EntityNotFoundException;
 import com.example.lms.exception.MaxBorrowingsException;
 import com.example.lms.model.Book;
@@ -33,14 +34,16 @@ public class BorrowingTransactionService {
     private final BookRepository bookRepository;
     private final BorrowerRepository borrowerRepository;
     private final BorrowingTransactionRepository borrowingTransactionRepository; 
-
+    private final EmailClient emailClient;
     private ModelMapper mapper;
 
-    public BorrowingTransactionService(BorrowingTransactionRepository borrowingTransactionRepository, BookRepository bookRepository, BorrowerRepository borrowerRepository, ModelMapper mapper) {
+    public BorrowingTransactionService(BorrowingTransactionRepository borrowingTransactionRepository, BookRepository bookRepository, BorrowerRepository borrowerRepository,
+                                            ModelMapper mapper, EmailClient emailClient) {
         this.borrowingTransactionRepository = borrowingTransactionRepository;
         this.bookRepository = bookRepository;
         this.borrowerRepository = borrowerRepository;
         this.mapper = mapper;
+        this.emailClient = emailClient;
     }
 
     @Transactional
@@ -88,12 +91,13 @@ public class BorrowingTransactionService {
         borrowingTransactionRepository.save(newBorrowingTransaction);
 
         // Send an e-mail notification
+        sendEmail(borrowerEmail, requestedBook.getTitle());
 
         return mapper.map(newBorrowingTransaction, BorrowingTransactionResponseDTO.class);
     }
 
     public void sendEmail(String email, String bookTitle) {
-
+        emailClient.sendEmail(new EmailRequest(email, "Book" + bookTitle + "borrowed successfully."));
     }
 
     public List<BorrowingTransactionResponseDTO> getAllBorrowings(){
