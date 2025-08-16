@@ -87,7 +87,13 @@ public class BorrowingTransactionService {
 
         borrowingTransactionRepository.save(newBorrowingTransaction);
 
+        // Send an e-mail notification
+
         return mapper.map(newBorrowingTransaction, BorrowingTransactionResponseDTO.class);
+    }
+
+    public void sendEmail(String email, String bookTitle) {
+
     }
 
     public List<BorrowingTransactionResponseDTO> getAllBorrowings(){
