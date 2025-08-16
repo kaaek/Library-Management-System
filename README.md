@@ -19,16 +19,16 @@ Built with Java, Spring Boot, Spring Data JPA, and Gradle.
 ## Entities
 
 1. **Author**
-   - `id`, `firstName`, `lastName`, `books`
+   - `id`, `name`, `biography`
    - Linked to `Book` (One-to-Many)
 
 2. **Book**
-   - `id`, `isbn`, `title`, `available`, `author`
+   - `id`, `isbn`, `title`, `available`, `author`, `category`
    - Linked to `Author` (Many-to-One)
    - Linked to `BorrowingTransaction` (One-to-Many)
 
 3. **Borrower**
-   - `id`, `name`, `email`, `transactions`
+   - `id`, `name`, `email`
    - Linked to `BorrowingTransaction` (One-to-Many)
 
 4. **BorrowingTransaction**
