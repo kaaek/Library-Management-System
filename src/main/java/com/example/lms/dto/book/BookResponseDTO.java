@@ -22,4 +22,4 @@ public class BookResponseDTO {
     private Category category;
     private UUID authorId;
     private boolean available;
-}
+} // TODO: later, add 'properties field' to the book response dto.

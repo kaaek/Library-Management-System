@@ -1,14 +1,20 @@
 package com.example.lms.service;
 
+import com.example.lms.client.CardClient;
+import com.example.lms.client.EmailClient;
 import com.example.lms.dto.borrowings.BorrowingTransactionRequestDTO;
 import com.example.lms.dto.borrowings.BorrowingTransactionResponseDTO;
 import com.example.lms.dto.borrowings.BorrowingTransactionUpdateDTO;
+import com.example.lms.dto.credit.CreditRequestDTO;
+import com.example.lms.dto.debit.DebitRequestDTO;
 import com.example.lms.dto.email.EmailRequest;
+import com.example.lms.dto.transaction.TransactionResponseDTO;
 import com.example.lms.exception.EntityNotFoundException;
 import com.example.lms.exception.MaxBorrowingsException;
 import com.example.lms.model.Borrower;
 import com.example.lms.model.BorrowingTransaction;
 import com.example.lms.model.Book.Book;
+import com.example.lms.model.enums.Currency;
 import com.example.lms.model.enums.TransactionStatus;
 import com.example.lms.repository.BookRepository;
 import com.example.lms.repository.BorrowerRepository;
@@ -17,6 +23,8 @@ import com.example.lms.repository.BorrowingTransactionRepository;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.modelmapper.*;
 
@@ -33,22 +41,21 @@ public class BorrowingTransactionService {
     @Value("${borrower.transaction.limit}")
     private int transactionLimit;
 
-    @Value("${book.base.price}")
-    private BigDecimal basePrice; // TODO: After testing, take the base price PER BOOK from the book dto.
-
     private final BookRepository bookRepository;
     private final BorrowerRepository borrowerRepository;
     private final BorrowingTransactionRepository borrowingTransactionRepository; 
     private final EmailClient emailClient;
+    private final CardClient cardClient;
     private ModelMapper mapper;
 
     public BorrowingTransactionService(BorrowingTransactionRepository borrowingTransactionRepository, BookRepository bookRepository, BorrowerRepository borrowerRepository,
-                                            ModelMapper mapper, EmailClient emailClient) {
+                                            ModelMapper mapper, EmailClient emailClient, CardClient cardClient) {
         this.borrowingTransactionRepository = borrowingTransactionRepository;
         this.bookRepository = bookRepository;
         this.borrowerRepository = borrowerRepository;
         this.mapper = mapper;
         this.emailClient = emailClient;
+        this.cardClient = cardClient;
     }
 
     @Transactional
@@ -58,7 +65,9 @@ public class BorrowingTransactionService {
         String borrowerEmail = borrowingTransactionRequestDTO.getBorrowerEmail().strip().toLowerCase();
         TransactionStatus type = borrowingTransactionRequestDTO.getType(); // BORROWED or RETURNED
         LocalDate returnDate = borrowingTransactionRequestDTO.getReturnDate();
-
+        String cardNumber = borrowingTransactionRequestDTO.getCardNumber();
+        Currency currency = borrowingTransactionRequestDTO.getCurrency();
+        
         // Other fields
         LocalDate borrowDate = LocalDate.now();
         LocalDate baseReturnDate = borrowDate.plusWeeks(1);
@@ -67,29 +76,86 @@ public class BorrowingTransactionService {
         Book requestedBook = bookRepository.findByIsbn(isbn)
             .orElseThrow(() -> new EntityNotFoundException("Book with ISBN: "+ isbn + " was not found."));
 
+        // Fetch borrower
+        Borrower borrower = borrowerRepository.findByEmail(borrowerEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Borrower with e-mail: " + borrowerEmail + " was not found."));
+
+        BorrowingTransaction newBorrowingTransaction = new BorrowingTransaction();
+
         // Check transaction type
         if (type == TransactionStatus.BORROWED) {
+
+            // Borrower must have at most 4 borrowings:
+            long activeBorrowings = borrowingTransactionRepository.countByBorrowerAndStatus(borrower, TransactionStatus.BORROWED);
+            if(activeBorrowings >= transactionLimit) { // Reject
+                throw new MaxBorrowingsException("Borrower with e-mail: " + borrowerEmail + " has reached their borrowing limit, and cannot borrow more books.");
+            }
+
             // Check if book is available to borrow
             if(!requestedBook.isAvailable()){
                 throw new RuntimeException("Book with ISBN: " + isbn + " is unavailable for borrowing.");
             }
-            BigDecimal extraDaysRentalPrice = requestedBook.getProperties().getExtra_days_rental_price();
-            BigDecimal insuranceFee = requestedBook.getProperties().getInsurance_fees();
-            calculatePrice(baseReturnDate, extraDaysRentalPrice, insuranceFee);
-            // TODO: send a request to the cms via feign api client with the card number and calculated total amount
-            // TODO: only if approved, borrow transaction is recorded. e-mail is sent.
-            // BigDecimal price = calculatePrice();
-        } else { // RETURNED
-            // TODO: verify if the return date has been exceeded.
-            // TODO: only if returned on or before the due date, refund the insurance fee → communicate with cms via feign.
+
+            // Get fees
+            BigDecimal totalFee = calculatePrice(baseReturnDate, returnDate, requestedBook);
+            
+            // Create a debit request DTO
+            DebitRequestDTO request = new DebitRequestDTO(cardNumber, totalFee, currency);
+            ResponseEntity <TransactionResponseDTO> response = cardClient.debit(request);
+            
+            if(!response.getStatusCode().equals(HttpStatus.CREATED)) { // If not approved
+                throw new IllegalStateException("Account invalid or funds are insufficient to borrow."); // TODO: Custom exceptions for exception handler.
+            }
+
+            // Record transaction and send an e-mail notification.
+            // Update book availability
+            requestedBook.setAvailable(false);
+            bookRepository.save(requestedBook);
+            
+            // Build transaction
+            TransactionStatus status = TransactionStatus.BORROWED;
+
+            newBorrowingTransaction = new BorrowingTransaction(
+                    requestedBook,
+                    borrower,
+                    borrowDate,
+                    returnDate,
+                    status
+            );
+
+            sendBorrowEmail(borrowerEmail, requestedBook.getTitle());
+            
+        } else if (type == TransactionStatus.RETURNED) { // RETURNED
+            LocalDate currenDate = LocalDate.now();
+            if(!returnDate.isAfter(currenDate)) {
+                // Refund insurance fee
+                BigDecimal insuranceFee = requestedBook.getProperties().getInsurance_fees();
+                CreditRequestDTO request = new CreditRequestDTO(cardNumber, insuranceFee, currency);
+                cardClient.credit(request);
+            }
+            // TODO: What if the borrower returned after the set returned date? (Settling extra fees)
+            requestedBook.setAvailable(true);
+            bookRepository.save(requestedBook);
+
+            // Build transaction
+            
+            TransactionStatus status = TransactionStatus.RETURNED;
+
+            newBorrowingTransaction = new BorrowingTransaction(
+                    requestedBook,
+                    borrower,
+                    borrowDate,
+                    returnDate,
+                    status
+            );
+
+            sendReturnEmail(borrowerEmail, requestedBook.getTitle());
         }
         
         // // Check if book is available
         // if(!requestedBook.isAvailable()){
         //     throw new RuntimeException("Book with ISBN: " + isbn + " is unavailable for borrowing.");
         // }
-
-        // TODO: Fetch the book's price.
 
         // // Fetch borrower
         // Borrower borrower = borrowerRepository.findByEmail(borrowerEmail)
@@ -117,25 +183,32 @@ public class BorrowingTransactionService {
         //         status
         // );
 
-        // borrowingTransactionRepository.save(newBorrowingTransaction);
+        borrowingTransactionRepository.save(newBorrowingTransaction);
 
-        // // Send an e-mail notification
-        // sendEmail(borrowerEmail, requestedBook.getTitle());
+        // Send an e-mail notification
+        sendBorrowEmail(borrowerEmail, requestedBook.getTitle());
 
-        // return mapper.map(newBorrowingTransaction, BorrowingTransactionResponseDTO.class);
+        return mapper.map(newBorrowingTransaction, BorrowingTransactionResponseDTO.class);
     }
 
-    // TODO: After testing, turn base price to an arg.
-    public BigDecimal calculatePrice(LocalDate baseReturnDate, BigDecimal extraDaysRentalPrice, BigDecimal insuranceFees){
-        // charge = base price + (extra days*extra_days_rental_price) + insurance_fees
-        LocalDate currentDate = LocalDate.now();
-        BigDecimal extraDays = BigDecimal.valueOf(ChronoUnit.DAYS.between(baseReturnDate, currentDate));
+    public BigDecimal calculatePrice(LocalDate baseReturnDate, LocalDate returnDate, Book book) {
+
+        BigDecimal extraDaysRentalPrice = book.getProperties().getExtra_days_rental_price();
+        BigDecimal insuranceFees = book.getProperties().getInsurance_fees();
+        BigDecimal basePrice = book.getBasePrice();
+
+        BigDecimal extraDays = BigDecimal.valueOf(ChronoUnit.DAYS.between(baseReturnDate, returnDate));
         BigDecimal extraFees = extraDays.multiply(extraDaysRentalPrice);
+        
         return basePrice.add(extraFees).add(insuranceFees);
     }
 
-    public void sendEmail(String email, String bookTitle) {
+    public void sendBorrowEmail(String email, String bookTitle) {
         emailClient.sendEmail(new EmailRequest(email, "Book \"" + bookTitle + "\" borrowed successfully."));
+    }
+
+    public void sendReturnEmail(String email, String bookTitle) {
+        emailClient.sendEmail(new EmailRequest(email, "Book \"" + bookTitle + "\" returned successfully."));
     }
 
     public List<BorrowingTransactionResponseDTO> getAllBorrowings(){

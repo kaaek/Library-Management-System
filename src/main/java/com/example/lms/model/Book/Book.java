@@ -8,6 +8,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
@@ -42,17 +44,21 @@ public class Book {
     @Column(name = "available", nullable = false)
     private boolean available;
 
+    @Column(name = "base_price", nullable = false)
+    private BigDecimal basePrice;
+
     @Type(JsonBinaryType.class)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "properties", columnDefinition = "jsonb")
     private Properties properties;
 
-    public Book(String title, String isbn, Category category, Author author, boolean available, Properties properties) {
+    public Book(String title, String isbn, Category category, Author author, boolean available, BigDecimal basePrice, Properties properties) {
         this.title = title;
         this.isbn = isbn;
         this.category = category;
         this.author = author;
         this.available = available;
+        this.basePrice = basePrice;
         this.properties = properties;
     }
 

@@ -2,6 +2,7 @@ package com.example.lms.dto.borrowings;
 
 import java.time.LocalDate;
 
+import com.example.lms.model.enums.Currency;
 import com.example.lms.model.enums.TransactionStatus;
 
 import lombok.AllArgsConstructor;
@@ -15,4 +16,6 @@ public class BorrowingTransactionRequestDTO {
     private String borrowerEmail;
     private TransactionStatus type; // BORROWED or RETURNED
     private LocalDate returnDate;
+    private String cardNumber;
+    private Currency currency;
 }

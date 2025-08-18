@@ -171,6 +171,7 @@ public class BookService {
     public BookResponseDTO createBook(BookRequestDTO bookRequestDTO) {
         // 1. Extract fields from the DTO
         String isbn = bookRequestDTO.getIsbn().strip();
+        BigDecimal basePrice = bookRequestDTO.getBasePrice();
 
         // Check if ISBN exists in db
         if(bookRepository.existsByIsbn(isbn)){
@@ -199,31 +200,25 @@ public class BookService {
                 author = query.get(0);
         } else {
                 author = authorRepository.save(new Author(authorName, ""));
-                // TODO: later, retreive the biography at a later point.
+                // TODO: Later, retreive the biography.
         }
 
         // 4. Add the values extra_days_rental_price and insurance_fees
         Properties newBookProperties = new Properties(bookExtraDaysRentalPrice, bookInsuranceFees);
-        // TODO: After testing, take these values and the base price from the request dto instead.
 
         // New book object
-        Book newBook = new Book(title, isbn, category, author, true, newBookProperties);
+        Book newBook = new Book(title, isbn, category, author, true, basePrice, newBookProperties);
 
         // Persist
         bookRepository.save(newBook);
 
         // Return DTO
         return modelMapper.map(newBook, BookResponseDTO.class);
-        // TODO: later, add 'properties field' to the book response dto.
     }
 
     public BookResponseDTO update(UUID bookId, BookUpdateDTO bookUpdateDTO) {
         // Fields:
-        // String newTitle = bookUpdateDTO.getTitle().strip();
-        // String newIsbn = bookUpdateDTO.getIsbn().strip();
-        // String newIsbn = Optional.ofNullable(bookUpdateDTO.getIsbn()).orElse("").strip();
         Category newCategory = bookUpdateDTO.getCategory();
-        // UUID newAuthorId = bookUpdateDTO.getAuthorId();
         boolean newAvailable = bookUpdateDTO.isAvailable();
         // TODO: Later, support updating the extra days rental price and the book insurance fees.
 
@@ -231,23 +226,9 @@ public class BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new EntityNotFoundException(bookNotFoundMsg + bookId));
 
-        // Find author.
-        // Author author = authorRepository.findById(newAuthorId)
-        //         .orElseThrow(() -> new EntityNotFoundException(authorNotFoundMsg + newAuthorId));
-
-        // Set fields
-        // book.setTitle(newTitle);
-
-        // ISBNs are different:
-        // if(!(book.getIsbn().equalsIgnoreCase(newIsbn)) && bookRepository.existsByIsbn(newIsbn)){
-                // throw new IllegalArgumentException("Book already exists with ISBN: " + newIsbn + ". Provide a unique ISBN.");
-        // }
-
-        // book.setIsbn(newIsbn);
         book.setCategory(newCategory);
         book.setAvailable(newAvailable);
-        // book.setAuthor(author);
-
+        
         // Persist
         bookRepository.save(book);
 

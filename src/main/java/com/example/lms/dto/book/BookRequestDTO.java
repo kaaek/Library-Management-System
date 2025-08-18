@@ -1,5 +1,7 @@
 package com.example.lms.dto.book;
 
+import java.math.BigDecimal;
+
 import com.example.lms.model.enums.Category;
 
 import jakarta.persistence.EnumType;
@@ -16,9 +18,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NotNull
 public class BookRequestDTO {
-    // private String title;
     private String isbn;
     @Enumerated(EnumType.STRING)
     private Category category;
-    // private UUID authorId;
+    private BigDecimal basePrice;
 }

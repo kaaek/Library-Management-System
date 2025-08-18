@@ -1,4 +1,4 @@
-package com.example.lms.service;
+package com.example.lms.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
