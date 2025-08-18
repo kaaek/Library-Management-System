@@ -6,8 +6,9 @@ import com.example.lms.dto.openLibrary.AuthorApiResponseDTO;
 import com.example.lms.dto.openLibrary.BookApiResponseDTO;
 import com.example.lms.exception.EntityNotFoundException;
 import com.example.lms.model.Author;
-import com.example.lms.model.Book;
 import com.example.lms.model.BorrowingTransaction;
+import com.example.lms.model.Book.Book;
+import com.example.lms.model.Book.Properties;
 import com.example.lms.model.enums.Category;
 import com.example.lms.repository.AuthorRepository;
 import com.example.lms.repository.BookRepository;
@@ -16,7 +17,10 @@ import com.example.lms.repository.BorrowingTransactionRepository;
 import jakarta.transaction.Transactional;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.util.List;
 // import java.util.Optional;
 import java.util.UUID;
@@ -34,12 +38,21 @@ public class BookService {
     private final BorrowingTransactionRepository borrowingTransactionRepository;
     private final OpenLibraryApiService openLibraryApiService;
 
+    @Value("${book.extra.days.rental.price}")
+    private final BigDecimal bookExtraDaysRentalPrice;
+
+    @Value("${book.insurance.fees}")
+    private final BigDecimal bookInsuranceFees;
+    
+
     public BookService(ModelMapper modelMapper, BookRepository bookRepository, AuthorRepository authorRepository, BorrowingTransactionRepository borrowingTransactionRepository, OpenLibraryApiService openLibraryApiService) {
         this.modelMapper = modelMapper;
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.borrowingTransactionRepository = borrowingTransactionRepository;
         this.openLibraryApiService = openLibraryApiService;
+        this.bookExtraDaysRentalPrice = null;
+        this.bookInsuranceFees = null;
     }
 
     public List<BookResponseDTO> getAllBooks(){
@@ -156,7 +169,6 @@ public class BookService {
 
     @Transactional
     public BookResponseDTO createBook(BookRequestDTO bookRequestDTO) {
-        
         // 1. Extract fields from the DTO
         String isbn = bookRequestDTO.getIsbn().strip();
 
@@ -186,17 +198,23 @@ public class BookService {
         if(!query.isEmpty()) {
                 author = query.get(0);
         } else {
-                author = authorRepository.save(new Author(authorName, "")); // TODO: Retreive the biography at a later point.
+                author = authorRepository.save(new Author(authorName, ""));
+                // TODO: later, retreive the biography at a later point.
         }
 
+        // 4. Add the values extra_days_rental_price and insurance_fees
+        Properties newBookProperties = new Properties(bookExtraDaysRentalPrice, bookInsuranceFees);
+        // TODO: After testing, take these values and the base price from the request dto instead.
+
         // New book object
-        Book newBook = new Book(title, isbn, category, author, true);
+        Book newBook = new Book(title, isbn, category, author, true, newBookProperties);
 
         // Persist
         bookRepository.save(newBook);
 
         // Return DTO
         return modelMapper.map(newBook, BookResponseDTO.class);
+        // TODO: later, add 'properties field' to the book response dto.
     }
 
     public BookResponseDTO update(UUID bookId, BookUpdateDTO bookUpdateDTO) {
@@ -207,6 +225,7 @@ public class BookService {
         Category newCategory = bookUpdateDTO.getCategory();
         // UUID newAuthorId = bookUpdateDTO.getAuthorId();
         boolean newAvailable = bookUpdateDTO.isAvailable();
+        // TODO: Later, support updating the extra days rental price and the book insurance fees.
 
         // Find book.
         Book book = bookRepository.findById(bookId)

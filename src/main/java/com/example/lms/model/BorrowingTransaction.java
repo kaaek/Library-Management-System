@@ -1,5 +1,6 @@
 package com.example.lms.model;
 
+import com.example.lms.model.Book.Book;
 import com.example.lms.model.enums.TransactionStatus;
 import jakarta.persistence.*;
 import lombok.Getter;

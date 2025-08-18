@@ -2,8 +2,8 @@ package com.example.lms.util;
 
 import com.example.lms.dto.book.BookResponseDTO;
 import com.example.lms.dto.borrowings.BorrowingTransactionResponseDTO;
-import com.example.lms.model.Book;
 import com.example.lms.model.BorrowingTransaction;
+import com.example.lms.model.Book.Book;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;

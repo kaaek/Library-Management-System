@@ -6,7 +6,7 @@ import com.example.lms.dto.author.AuthorUpdateDTO;
 import com.example.lms.dto.book.BookResponseDTO;
 import com.example.lms.exception.EntityNotFoundException;
 import com.example.lms.model.Author;
-import com.example.lms.model.Book;
+import com.example.lms.model.Book.Book;
 import com.example.lms.repository.AuthorRepository;
 import com.example.lms.repository.BookRepository;
 import jakarta.transaction.Transactional;

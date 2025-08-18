@@ -1,7 +1,7 @@
 package com.example.lms.repository;
 
 import com.example.lms.model.Author;
-import com.example.lms.model.Book;
+import com.example.lms.model.Book.Book;
 import com.example.lms.model.enums.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

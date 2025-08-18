@@ -1,10 +1,17 @@
-package com.example.lms.model;
+package com.example.lms.model.Book;
+import com.example.lms.model.Author;
 import com.example.lms.model.enums.Category;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
@@ -35,11 +42,27 @@ public class Book {
     @Column(name = "available", nullable = false)
     private boolean available;
 
-    public Book(String title, String isbn, Category category, Author author, boolean available) {
+    @Type(JsonBinaryType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "properties", columnDefinition = "jsonb")
+    private Properties properties;
+
+    public Book(String title, String isbn, Category category, Author author, boolean available, Properties properties) {
+        this.title = title;
+        this.isbn = isbn;
+        this.category = category;
+        this.author = author;
+        this.available = available;
+        this.properties = properties;
+    }
+
+    /*
+     * public Book(String title, String isbn, Category category, Author author, boolean available) {
         this.title = title;
         this.isbn = isbn;
         this.category = category;
         this.author = author;
         this.available = available;
     }
+     */
 }
