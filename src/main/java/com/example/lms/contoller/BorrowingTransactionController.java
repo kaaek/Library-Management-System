@@ -34,13 +34,13 @@ public class BorrowingTransactionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BorrowingTransactionResponseDTO> getBorrowingById(@PathVariable UUID id){
+    public ResponseEntity<BorrowingTransactionResponseDTO> getBorrowingById(@PathVariable ("id") UUID id){
         BorrowingTransactionResponseDTO dto = borrowingTransactionService.getBorrowingById(id);
         return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BorrowingTransactionResponseDTO> updateBorrowing(@PathVariable UUID id, @RequestBody BorrowingTransactionUpdateDTO borrowingTransactionUpdateDTO) {
+    public ResponseEntity<BorrowingTransactionResponseDTO> updateBorrowing(@PathVariable ("id") UUID id, @RequestBody BorrowingTransactionUpdateDTO borrowingTransactionUpdateDTO) {
         BorrowingTransactionResponseDTO dto = borrowingTransactionService.updateBorrowing(id, borrowingTransactionUpdateDTO);
         return ResponseEntity.ok(dto);
     }
@@ -52,7 +52,7 @@ public class BorrowingTransactionController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBorrowingById(@PathVariable UUID id){
+    public ResponseEntity<String> deleteBorrowingById(@PathVariable ("id") UUID id){
         borrowingTransactionService.deleteBorrowingById(id);
         return ResponseEntity.ok("Transaction with id " + id + " was deleted.");
     }

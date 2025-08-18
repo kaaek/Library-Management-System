@@ -97,7 +97,7 @@ public class BorrowingTransactionService {
     }
 
     public void sendEmail(String email, String bookTitle) {
-        emailClient.sendEmail(new EmailRequest(email, "Book " + bookTitle + " borrowed successfully."));
+        emailClient.sendEmail(new EmailRequest(email, "Book \"" + bookTitle + "\" borrowed successfully."));
     }
 
     public List<BorrowingTransactionResponseDTO> getAllBorrowings(){
@@ -189,9 +189,13 @@ public class BorrowingTransactionService {
     }
 
     public void deleteBorrowingById(UUID id){
+
+        BorrowingTransaction transaction = borrowingTransactionRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Transaction with ID: " + id + " not found in db."));
+
+        // TODO: Sometimes deleting a transaction requires changing the availability of the mentioned book.
             
-        borrowingTransactionRepository.delete(borrowingTransactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Borrowing transaction not found")));
+        borrowingTransactionRepository.delete(transaction);
     }
 
 

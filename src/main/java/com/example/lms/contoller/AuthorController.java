@@ -29,13 +29,13 @@ public class AuthorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AuthorResponseDTO> getAuthorById(@PathVariable UUID id){
+    public ResponseEntity<AuthorResponseDTO> getAuthorById(@PathVariable ("id") UUID id){
         AuthorResponseDTO dto = authorService.getAuthorById(id);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{id}/books")
-    public ResponseEntity<List<BookResponseDTO>> getBooksByAuthorById(@PathVariable UUID id){
+    public ResponseEntity<List<BookResponseDTO>> getBooksByAuthorById(@PathVariable ("id") UUID id){
         List<BookResponseDTO> dtos = authorService.getBooksByAuthorById(id);
         return ResponseEntity.ok(dtos);
     }
@@ -47,13 +47,13 @@ public class AuthorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AuthorResponseDTO> updateAuthor(@PathVariable UUID id, @RequestBody AuthorUpdateDTO authorUpdateDTO){
+    public ResponseEntity<AuthorResponseDTO> updateAuthor(@PathVariable ("id") UUID id, @RequestBody AuthorUpdateDTO authorUpdateDTO){
         AuthorResponseDTO dto = authorService.update(id, authorUpdateDTO);
         return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAuthor(@PathVariable UUID id){
+    public ResponseEntity<String> deleteAuthor(@PathVariable ("id") UUID id){
         authorService.deleteAuthorById(id);
         return ResponseEntity.ok("Author with id "+id+"was deleted.");
     }

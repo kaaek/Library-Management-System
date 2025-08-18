@@ -39,24 +39,4 @@ public class OpenLibraryApiService {
         }
     }
 
-    // public String fetchAuthorName(String isbn) {
-    // String apiUrl = "https://openlibrary.org/api/books?bibkeys=ISBN:" + isbn + "&format=json&jscmd=data";
-    // try {
-    //     OpenLibraryResponseDTO response = restTemplate.getForObject(apiUrl, OpenLibraryResponseDTO.class);
-
-    //     if (response == null || response.getBooks() == null) {
-    //         return "Unknown Author"; // API returned nothing or invalid structure
-    //     }
-
-    //     BookApiResponseDTO book = response.getBooks().get("ISBN:" + isbn);
-    //     if (book == null || book.getAuthors() == null || book.getAuthors().isEmpty()) {
-    //         return "Unknown Author"; // no authors found
-    //     }
-
-    //     return book.getAuthors().get(0).getName(); // safe to access
-    //     } catch (Exception e) {
-    //         return "Unknown Author"; // fallback on any request/parse error
-    //     }
-    // }
-
 }
